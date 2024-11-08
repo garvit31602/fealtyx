@@ -1,3 +1,4 @@
+from waitress import serve
 from flask import Flask, jsonify, request, abort, render_template
 import json
 import requests
@@ -131,5 +132,6 @@ def chat():
         return jsonify({'error': 'Failed to connect to Ollama'}), 500
 
 if __name__ == '__main__':
+    serve(app, host="0.0.0.0", port=8000)
     app.run(debug=True)
 
