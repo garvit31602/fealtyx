@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Management</title>
+    <link rel="stylesheet" href="static/css/main.css"
+</head>
+<body>
+    <h1>Student Management</h1>
+
+    <!-- Display the List of Students -->
+    <h2>All Students</h2>
+    <div id="students-list"></div>
+
+    <!-- Form to Add a New Student -->
+    <h2>Add a New Student</h2>
+    <form id="add-student-form">
+        <label for="name">Name:</label>
+        <input type="text" id="name" required><br>
+
+        <label for="age">Age:</label>
+        <input type="number" id="age" required><br>
+
+        <label for="email">Email:</label>
+        <input type="email" id="email" required><br>
+
+        <button type="submit">Add Student</button>
+    </form>
+
+    <script>
+        // Function to fetch all students and display them
+        function fetchStudents() {
+            fetch('/students')
+                .then(response => response.json())
+                .then(students => {
+                    const studentsList = document.getElementById('students-list');
+                    studentsList.innerHTML = ''; // Clear previous data
+
+                    students.forEach(student => {
+                        const studentDiv = document.createElement('div');
+                        studentDiv.innerHTML = `
+                            <strong>ID:</strong> ${student.id} <br>
+                            <strong>Name:</strong> ${student.name} <br>
+                            <strong>Age:</strong> ${student.age} <br>
+                            <strong>Email:</strong> ${student.email} <br>
+                            <button onclick="deleteStudent(${student.id})">Delete</button>
+                            <hr>
+                        `;
+                        studentsList.appendChild(studentDiv);
+                    });
+                })
+                .catch(error => console.error('Error fetching students:', error));
+        }
+
+        // Function to add a new student
+        document.getElementById('add-student-form').addEventListener('submit', event => {
+            event.preventDefault();
+
+            const newStudent = {
+                name: document.getElementById('name').value,
+                age: document.getElementById('age').value,
+                email: document.getElementById('email').value
+            };
+
+            fetch('/students', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(newStudent)
+            })
+            .then(response => {
+                if (response.ok) {
+                    // Clear the form
+                    document.getElementById('name').value = '';
+                    document.getElementById('age').value = '';
+                    document.getElementById('email').value = '';
+                    fetchStudents(); // Refresh the student list
+                } else {
+                    console.error('Failed to add student');
+                }
+            })
+            .catch(error => console.error('Error adding student:', error));
+        });
+
+        // Function to delete a student by ID
+        function deleteStudent(studentId) {
+            fetch(`/students/${studentId}`, {
+                method: 'DELETE'
+            })
+            .then(response => {
+                if (response.ok) {
+                    fetchStudents(); // Refresh the student list
+                } else {
+                    console.error('Failed to delete student');
+                }
+            })
+            .catch(error => console.error('Error deleting student:', error));
+        }
+
+        // Fetch students when the page loads
+        fetchStudents();
+    </script>
+</body>
+</html>
